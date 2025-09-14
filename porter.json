@@ -1,0 +1,8 @@
+{
+    "name" : "MyProject",
+    "runtimes" : [ 6 ],
+    "packages" : [
+        { "repo" : "shukriadams.PerforceConnect", "source" : "github", "tag": "0.1.0" }
+        
+    ]
+}
