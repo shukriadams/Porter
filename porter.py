@@ -1,4 +1,4 @@
-# porter --install --path /some/path
+# porter --install /some/path
 import argparse
 import os
 import sys
@@ -155,18 +155,16 @@ def process_porter(root_dir_path, context=[]):
 
 
 argsParser = argparse.ArgumentParser()
-argsParser.add_argument('--install', action='store_true')
-argsParser.add_argument('--path', default=None)
+argsParser.add_argument('--install', default=None)
 args = argsParser.parse_args()
 
-if args.install and args.path is None:
-    print('Error : --path required for install')
+if args.install is None:
+    print('Error : try --install <some-path>')
     sys.exit(1)
 
-if args.install:
-    print(f'install to {args.path}')
+print(f'installing in {args.install}')
 
-root_dir_path = os.path.abspath(args.path)
+root_dir_path = os.path.abspath(args.install)
 
 porter_start_file_path = os.path.join(root_dir_path, 'porter.json')
 if not os.path.isfile(porter_start_file_path):
