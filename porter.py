@@ -1,4 +1,4 @@
-# porter install --path /some/path
+# porter --install --path /some/path
 import argparse
 import os
 import sys
