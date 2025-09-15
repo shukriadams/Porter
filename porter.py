@@ -55,11 +55,11 @@ def exec(command, cwd=None):
     return returnCode
 
 
-def process_porter(root_dir_path, context=None):
+def process_porter(root_dir_path, context=[]):
     porter_start_file_path = os.path.join(root_dir_path, 'porter.json')
     if not os.path.isfile(porter_start_file_path):
-        print(f'Error : expected porter.json not found at path {root_dir_path}')
-        sys.exit(1)
+        print(f'Error : expected porter.json not found at path {root_dir_path}, ignoring')
+        return
 
     porter_conf = {}
     porter_packages_dir = os.path.join(root_dir_path, 'porter')
@@ -74,10 +74,10 @@ def process_porter(root_dir_path, context=None):
     packages_to_install = []
     package_name=porter_conf['name']
     
-    if context is None:
-        context = package_name
-    else:
-        context = f'{context}.{package_name}'
+    context = context[:]
+    context.append(package_name)
+
+    print(f'!! PORTER processing path {root_dir_path}, context is {context}')
 
     # generate package to install from conf packages
     for package in porter_conf['packages']:
@@ -128,15 +128,22 @@ def process_porter(root_dir_path, context=None):
         for cs_file in cs_files:
             with codecs.open(cs_file, encoding='utf-8') as file:
                 file_content = file.read()
-                if (file_content.startswith('namespace '+context+' {')):
+                if ('//PORTER-WRAPPER' in file_content):
                     continue
 
-                file_content = ('' +
-                    '// namespace wrapper added by Porter\n' +
-                    'namespace '+context+'.Packages {\n' +
-                    '// namespace wrapper added by Porter\n\n' +
-                    file_content+'\n'+
-                    '} // Porter namespace wrapper')
+                namespace_lead = '//PORTER-WRAPPER!\n'
+                namespace_tail= ''
+                for this_context in context:
+                    namespace_lead = (namespace_lead+
+                        'namespace '+this_context+'.Porter_Packages {\n')
+
+                    namespace_tail = namespace_tail +'}\n'
+
+                namespace_lead = f'{namespace_lead}//PORTER-WRAPPER!\n\n\n'
+                namespace_tail = f'\n\n//PORTER-WRAPPER!\n{namespace_tail}//PORTER-WRAPPER!'
+
+
+                file_content = f'{namespace_lead}{file_content}{namespace_tail}'
 
                 with open(cs_file, 'w') as output:
                     output.write(file_content)
