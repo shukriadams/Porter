@@ -1,6 +1,6 @@
 # Porter - A Different C# Package Manager
 
-Porter does C# packages in the same way NodeJS, GoLang and others do it - pure source code, fetchable directly from git repos, using JSON manifest files. Packages are linked via recursing namespaces.
+Porter does C# packages in the same way NodeJS, GoLang and others do it - pure source code, fetchable directly from git repos, using JSON manifest files.
 
 ## Features 
 
