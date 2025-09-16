@@ -5,7 +5,7 @@ Porter does C# packages in the same way NodeJS, GoLang and others do it - pure s
 ## Features 
 
 - Packages can reference their own packages, ad infinitum (*). Porter will import and set them up for you. 
-- Different versions of a package can be referenced through-out your total package stack without collisions. 
+- Different versions of the same package can occur in your dependency stack without collisions.
 
 
  
