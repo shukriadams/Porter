@@ -1,8 +1,7 @@
 {
-    "name" : "MyProject",
+    "name" : "ConfigManager",
     "runtimes" : [ 6 ],
     "packages" : [
-        { "repo" : "shukriadams.PerforceConnect", "source" : "github", "tag": "0.1.0" }
-        
+        "github.shukriadams.PerforceConnect@0.1.1" 
     ]
 }
