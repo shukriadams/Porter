@@ -1,6 +1,11 @@
 # Proof-of-concept for Porter, a packages-as-source-code manager for C#.
-
+#
+# Use : 
 # porter --install /some/path
+#
+# Confirmed working on Python:
+# 3.8.0 Linux
+# 3.12.0 Windows
 import argparse
 import os
 import sys
@@ -13,6 +18,7 @@ import codecs
 import uuid
 import base64
 import shutil
+import stat
 
 class Package:
     def __init__(self, repo, tag):
@@ -26,6 +32,14 @@ def encode(str):
     b64_bytes = base64.b64encode(b)
     s = b64_bytes.decode('ascii')
     return s.replace('/', '_')
+
+# deletes a dir, including readonly files
+def deleteDir(dir):
+    def on_error( func, file, exc_info):
+        os.chmod(file, stat.S_IWRITE)
+        os.unlink(file)
+        
+    shutil.rmtree( dir, onexc = on_error )
 
 def exec(command, cwd=None):
 
@@ -135,8 +149,6 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
     if not os.path.isdir(porter_packages_dir):
         os.makedirs(porter_packages_dir)
 
-    destructive=True
-
     for package in packages_to_install:
         # create temp dir in porter's own work dir, use deterministic path so we always
         # clean up after ourselves. Path is based on package's total namespace depth, so
@@ -148,7 +160,7 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
         package_temp_dir = os.path.abspath(package_temp_dir)
 
         if os.path.isdir(package_temp_dir):
-            shutil.rmtree(package_temp_dir)
+            deleteDir(package_temp_dir)
         os.makedirs(package_temp_dir)
 
         # clone package to temp location, we need to analyse it first
@@ -184,8 +196,8 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
         # convert to absolute for remapping
         child_package_dir = os.path.abspath(child_package_dir)
 
-        if destructive and os.path.isdir(child_package_dir):
-            shutil.rmtree(child_package_dir)   
+        if os.path.isdir(child_package_dir):
+            deleteDir(child_package_dir)   
 
         if not os.path.isdir(child_package_dir):
             os.makedirs(child_package_dir)
@@ -223,8 +235,8 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
             os.path.join(child_package_dir, 'porter.json'))
 
         # clean up temp child package dir
-        shutil.rmtree(package_temp_dir)
-
+        deleteDir(package_temp_dir)
+    
         print(f'Installed package {this_package_name}')
 
         # finally recurse by running in child package dir,
