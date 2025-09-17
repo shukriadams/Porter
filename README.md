@@ -1,6 +1,6 @@
-# Porter - A Different C# Package Manager
+# Porter - C# Source Package Manager
 
-Porter does C# packages in the same way NodeJS, GoLang and others do it - pure source code, fetchable directly from git repos, using JSON manifest files.
+Porter does C# packages in the same as NodeJS, GoLang and others - pure source code, fetchable directly from git repos, using JSON manifest files.
 
 
 ## Features 
@@ -35,7 +35,7 @@ Create a `porter.json` file in the root of your C# project (the one with the .cs
 3 - `packages` is an optional string array, must be public repos on github, and must have tagged releases. These are the packages your project depends on.
 4 - The package repos referenced should each have their own porter.json file in their roots, with the same structure above, and should declare a runtime that intersects with yours.
 
-Copy porter.py to your system. Run using
+Copy porter.py to your system. Currently Python 3.8.X is supported. Run using
 
     python porter.py --install /dir/to/your/porter.json
 
