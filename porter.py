@@ -7,6 +7,8 @@
 # Confirmed working on Python:
 # 3.8.0 Linux
 # 3.12.0 Windows
+import warnings
+
 import argparse
 import os
 import sys
@@ -20,6 +22,10 @@ import uuid
 import base64
 import shutil
 import stat
+import fnmatch
+
+# still using onerror on shutil.rmtree, ignore
+warnings.filterwarnings('ignore', category=DeprecationWarning) 
 
 class Package:
     def __init__(self, repo, tag):
@@ -39,8 +45,9 @@ def deleteDir(dir):
     def on_error( func, file, exc_info):
         os.chmod(file, stat.S_IWRITE)
         os.unlink(file)
-        
-    shutil.rmtree( dir, onexc = on_error )
+    
+    # replace onerror with onexc (love how they somehow manage to make a garbage api even more garbage)
+    shutil.rmtree( dir, onerror = on_error )
 
 def exec(command, cwd=None):
 
@@ -185,7 +192,11 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
             continue
 
         this_package_name = this_package_porter_conf['name']
-        
+
+        if not 'ignore' in this_package_porter_conf:
+            this_package_porter_conf['ignore'] = []
+        ignore_paths = this_package_porter_conf['ignore']
+
         # enforce top level runtimes on this
         this_package_runtimes = this_package_porter_conf['runtimes']
         if not any(runtimes in set(this_package_runtimes) for runtimes in require_run_times):
@@ -204,10 +215,18 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
             os.makedirs(child_package_dir)
 
         # find all .cs files in package temp, we want to wrap and copy them
-        cs_files = glob.glob(os.path.join(package_temp_dir, '**.cs')) # not sure this will work on nested
+        cs_files = glob.glob(os.path.join(package_temp_dir, '**/*.cs')) # not sure this will work on nested
         for cs_file in cs_files:
             # convert to abs path for easier remap
             cs_file = os.path.abspath(cs_file)
+            
+            ignore=False
+            for ignore_path in ignore_paths:
+                if fnmatch.fnmatch(cs_file, ignore_path):
+                    ignore=True
+
+            if ignore:
+                continue
 
             with codecs.open(cs_file, encoding='utf-8') as file:
                 file_content = file.read()
@@ -227,6 +246,11 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
 
                 # remap .cs file in temp dir to public child package dir
                 remapped_file_path = cs_file.replace(package_temp_dir, child_package_dir)
+
+                # create target directory
+                remapped_file_dir = os.path.dirname(remapped_file_path)
+                if not os.path.isdir(remapped_file_dir):
+                    os.makedirs(remapped_file_dir)
 
                 with open(remapped_file_path, 'w') as output:
                     output.write(file_content)
@@ -248,17 +272,18 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
 print('Porter, a package manager for C#')
 
 argsParser = argparse.ArgumentParser()
-argsParser.add_argument('--install', default=None)
+argsParser.add_argument('--install', nargs='?', const='')
 args = argsParser.parse_args()
 
-if args.install is None:
-    print('Error : try --install <some-path>')
-    sys.exit(1)
+# if no intall dir set, use current dir
+run_in_dir = args.install 
+if run_in_dir == '':
+    run_in_dir = os.getcwd()
 
-print(f'Running in dir : {args.install}')
+print(f'Running in dir : {run_in_dir}')
 
 # the directory we start processing in must have a porter.json file in it.
-root_dir_path = os.path.abspath(args.install)
+root_dir_path = os.path.abspath(run_in_dir)
 porter_start_file_path = os.path.join(root_dir_path, 'porter.json')
 if not os.path.isfile(porter_start_file_path):
     print(f'Error : expected porter.json not found at path {root_dir_path}')
