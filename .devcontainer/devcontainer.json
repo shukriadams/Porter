@@ -1,5 +1,5 @@
 {
-    "name": "porrter",
+    "name": "porter",
     "image": "shukriadams/dotnet6build:0.0.2",
     "forwardPorts": [],
     "customizations": {
