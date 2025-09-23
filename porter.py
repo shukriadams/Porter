@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Proof-of-concept for Porter, a packages-as-source-code manager for C#.
 #
 # Use : 
@@ -184,7 +185,7 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
             continue
 
         this_package_name = this_package_porter_conf['name']
-
+        
         # enforce top level runtimes on this
         this_package_runtimes = this_package_porter_conf['runtimes']
         if not any(runtimes in set(this_package_runtimes) for runtimes in require_run_times):
