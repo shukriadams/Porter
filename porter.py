@@ -107,10 +107,10 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
     package_name=porter_conf['name']
 
     # enforce required structures in conf
-    if porter_conf['runtimes'] == None:
+    if not 'runtimes' in porter_conf:
         porter_conf['runtimes'] = []
 
-    if porter_conf['packages'] == None:
+    if not 'packages' in porter_conf:
         porter_conf['packages'] = []
     
     # if runtimes not set, we're at top-level project, use it's runtimes
@@ -197,6 +197,10 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
             this_package_porter_conf['ignore'] = []
         ignore_paths = this_package_porter_conf['ignore']
 
+        package_copy_root = package_temp_dir
+        if 'export' in this_package_porter_conf:
+            package_copy_root = os.path.join(package_temp_dir, this_package_porter_conf['export'])
+
         # enforce top level runtimes on this
         this_package_runtimes = this_package_porter_conf['runtimes']
         if not any(runtimes in set(this_package_runtimes) for runtimes in require_run_times):
@@ -215,7 +219,7 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
             os.makedirs(child_package_dir)
 
         # find all .cs files in package temp, we want to wrap and copy them
-        cs_files = glob.glob(os.path.join(package_temp_dir, '**/*.cs')) # not sure this will work on nested
+        cs_files = glob.glob(os.path.join(package_copy_root, '*.cs'), recursive=True) 
         for cs_file in cs_files:
             # convert to abs path for easier remap
             cs_file = os.path.abspath(cs_file)
@@ -245,7 +249,7 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
                 file_content = f'{namespace_lead}{file_content}{namespace_tail}'
 
                 # remap .cs file in temp dir to public child package dir
-                remapped_file_path = cs_file.replace(package_temp_dir, child_package_dir)
+                remapped_file_path = cs_file.replace(package_copy_root, child_package_dir)
 
                 # create target directory
                 remapped_file_dir = os.path.dirname(remapped_file_path)

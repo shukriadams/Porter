@@ -27,13 +27,15 @@ Create a `porter.json` file in the root of your C# project (the one with the .cs
         "runtimes" : [ 6 ],
         "packages" : [
             "github.someuser.somepackage@1.0.0" 
-        ]
+        ],
+        "export" : "files",
     }
 
 1 - `name` should your project's root namespace. You can use anything, but the actual root namespace will be easiest when referencing packages from your code.
 2 - `runtimes` should be the Dotnet Runtime your application targets. In this case it's Dotnet 6. 
 3 - `packages` is an optional string array, must be public repos on github, and must have tagged releases. These are the packages your project depends on.
-4 - The package repos referenced should each have their own porter.json file in their roots, with the same structure above, and should declare a runtime that intersects with yours.
+4 - `export` is optional, and is adirectory in your package to start exporting files from.
+5 - The package repos referenced should each have their own porter.json file in their roots, with the same structure above, and should declare a runtime that intersects with yours.
 
 Copy porter.py to your system. Currently Python 3.8.X is supported. Run using
 
