@@ -1,6 +1,6 @@
 # Porter - C# Source Package Manager
 
-Porter does C# packages in the same style as NodeJS, GoLang and others - pure source code, fetchable directly from git repos, using JSON manifest files.
+Porter is a source-only package system for C#. It works in much the same way as NPM for Javascript and Crate for Rust - pure source code, fetchable directly from git repos, using JSON manifest files.
 
 
 ## Features 
@@ -20,7 +20,7 @@ Porter does C# packages in the same style as NodeJS, GoLang and others - pure so
 
 ## Use
 
-Create a `porter.json` file in the root of your repo. If you're used NodeJS, this file works similarly to `package.json`. It contents should look like
+Create a `porter.json` file in the root of your repo. If you're familiar with NodeJS, this file works similarly to `package.json`. It contents should look like
 
     {
         "name" : "MyProjectNamespace",
