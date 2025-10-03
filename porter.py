@@ -219,7 +219,7 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
             os.makedirs(child_package_dir)
 
         # find all .cs files in package temp, we want to wrap and copy them
-        cs_files = glob.glob(os.path.join(package_copy_root, '*.cs'), recursive=True) 
+        cs_files = glob.glob(os.path.join(package_copy_root, '**/*.cs'), recursive=True) 
         for cs_file in cs_files:
             # convert to abs path for easier remap
             cs_file = os.path.abspath(cs_file)
