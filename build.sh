@@ -1,5 +1,6 @@
 rm -rf ./build-out
 mkdir -p ./build-out
+python3 porter.py --install ./src/Porter
 dotnet restore
 dotnet publish \
     --configuration Release \
