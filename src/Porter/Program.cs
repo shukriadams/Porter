@@ -20,18 +20,20 @@ namespace Porter
 
                     System.Environment.Exit(1);
                 }
+                
+                bool hasCommand = false;
 
-                if (switches.Contains("help") || switches.Contains("h"))
+                if (!hasCommand || switches.Contains("help") || switches.Contains("h"))
                 {
+                    hasCommand = true;
                     Console.WriteLine("Usage:");
                     Console.WriteLine("");
-                    Console.WriteLine("--help|-h : this help message");
-                    Console.WriteLine("--install|-i <optional PATH> : installs Porter packages.");
-                    Console.WriteLine("    <PATH> is optional directory where Porter packages will be installed in. ");
+                    Console.WriteLine("--help |-h : this help message");
+                    Console.WriteLine("--install | -i <optional PATH> : installs Porter packages.");
+                    Console.WriteLine("    <PATH> is optional directory where Porter packages will be installed. ");
                     Console.WriteLine("    If no directory is given, the current working directory is used.");
                     Console.WriteLine("    The directory used must contain a valid porter.json file.");
                 }
-
 
             }
             catch (Exception ex)
