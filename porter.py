@@ -178,7 +178,7 @@ def process_porter(root_dir_path, context=[], require_run_times=None):
         os.makedirs(package_temp_dir)
 
         # clone package to temp location, we need to analyse it first
-        result = exec(f'git clone --branch {package.Tag} {package.Source}/{package.Repo} {package_temp_dir}')
+        result = exec(f'git clone --branch {package.Tag} {package.Source}/{package.Repo} "{package_temp_dir}"')
         if result != 0:
             sys.exit(0)
         
