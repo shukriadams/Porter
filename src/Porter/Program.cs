@@ -21,11 +21,12 @@ namespace Porter
                     System.Environment.Exit(1);
                 }
                 
-                bool hasCommand = false;
+                string command = null;
+                if (switches.Contains("install") || switches.Contains("i"))
+                    command = "install";
 
-                if (!hasCommand || switches.Contains("help") || switches.Contains("h"))
+                if (command == null || switches.Contains("help") || switches.Contains("h"))
                 {
-                    hasCommand = true;
                     Console.WriteLine("Usage:");
                     Console.WriteLine("");
                     Console.WriteLine("--help |-h : this help message");
@@ -33,6 +34,16 @@ namespace Porter
                     Console.WriteLine("    <PATH> is optional directory where Porter packages will be installed. ");
                     Console.WriteLine("    If no directory is given, the current working directory is used.");
                     Console.WriteLine("    The directory used must contain a valid porter.json file.");
+                }
+
+                if (command == "install")
+                {
+                    string installPath = switches.Get("install", "i");
+                    if (string.IsNullOrEmpty(installPath))
+                        installPath = Directory.GetCurrentDirectory();
+
+                    Install install = new Install();
+                    install.Work(installPath);
                 }
 
             }

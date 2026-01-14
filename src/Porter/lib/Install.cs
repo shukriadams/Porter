@@ -17,32 +17,47 @@ namespace Porter
 
         public void Work(string installPath)
         {
-            Console.WriteLine($"Installing in path \"{installPath}\"");
 
             // confirm dir exists
             if (!Directory.Exists(installPath))
             {
                 Console.WriteLine($"ERROR : Install directory \"{installPath}\" not found");
-                System.Environment.Exit(1);
+                Environment.Exit(1);
                 return;
             }
+
+            string absolutePath = Path.GetFullPath(installPath);
+            if (absolutePath == installPath)
+                absolutePath = string.Empty;
+            else
+                absolutePath = $" (abs path {absolutePath})";
+
+            Console.WriteLine($"Attempting to install in path \"{installPath}\"{absolutePath}");
 
             // verify that install path has a porter.json file
             try
             {
-                bool exists = Directory.GetFiles(installPath).Select(f => f.ToLower()).Any(f => f == "porter.json");
-                if (!exists)
+                if (!File.Exists(Path.Join(installPath, "porter.json")))
                 {
                     Console.WriteLine($"ERROR : Cound not find a porter.json file in \"{installPath}\"");
-                    System.Environment.Exit(1);
+                    Environment.Exit(1);
                     return;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"ERROR trying to read contents of directory \"{installPath}\": {ex.Message}");
-                System.Environment.Exit(1);
+                Environment.Exit(1);
                 return;
+            }
+
+            // ensure git installed
+            Shell gitCall = new Shell("git --help");
+            int result = gitCall.Run();
+            if (result != 0)
+            {
+                Console.WriteLine($"Failed to get a response from git - is it installed? Error {result}, {gitCall.Err}");
+                Environment.Exit(1);
             }
 
             // create work directory for porter, it needs this to temporarily story stuff in
@@ -54,7 +69,7 @@ namespace Porter
             catch (Exception ex)
             {
                 Console.WriteLine($"ERROR : could not create working dir {_workDirPath}");
-                System.Environment.Exit(1);
+                Environment.Exit(1);
                 return;
             }
 
@@ -63,6 +78,7 @@ namespace Porter
 
             Console.WriteLine("Done installing");
         }
+
         private bool GlobMatch(string globPattern, string path)
         {
             return new Regex(
@@ -83,7 +99,7 @@ namespace Porter
             catch(Exception ex)
             {
                 Console.WriteLine($"ERROR could not read file \"{porterFilePath}\": {ex.Message}");
-                System.Environment.Exit(1);
+                Environment.Exit(1);
                 return;
             }
 
@@ -97,7 +113,7 @@ namespace Porter
             {
                 Console.WriteLine($"ERROR could not deserialize JSON in file \"{porterFilePath}\": {ex.Message}. JSON is :");
                 Console.WriteLine(rawPorterFileContent);
-                System.Environment.Exit(1);
+                Environment.Exit(1);
                 return;
             }
 
@@ -107,7 +123,7 @@ namespace Porter
                 if (porterPackage.runtimes == null || !porterPackage.runtimes.Any())
                 {
                     Console.WriteLine("top level project must declare at least one expected runtime");
-                    System.Environment.Exit(1);
+                    Environment.Exit(1);
                     return;
                 }
 
@@ -131,7 +147,7 @@ namespace Porter
                     if(!parts.Success || parts.Groups.Count < 4)
                     {
                         Console.WriteLine($"Package reference {package} in {porterFilePath} is malformed.");
-                        System.Environment.Exit(1);
+                        Environment.Exit(1);
                         return;
                     }
                         
@@ -142,7 +158,7 @@ namespace Porter
                     if (package_source != "github")
                     {
                         Console.WriteLine($"Error : only github currently supported : {package_source}");
-                        System.Environment.Exit(1);
+                        Environment.Exit(1);
                         return;
                     }
                     
@@ -161,7 +177,7 @@ namespace Porter
                 if (packages_to_install.Where(p => p.Repo == package.Repo).Count() > 1)
                 {
                     Console.WriteLine($"Error : package {package.Repo} is reference dmore than once by {porterFilePath}");
-                    System.Environment.Exit(1);
+                    Environment.Exit(1);
                     return;                
                 }
 
@@ -174,7 +190,7 @@ namespace Porter
             catch(Exception ex)
             {
                 Console.WriteLine($"Error : could not create porter dir {porter_packages_dir} {ex}");
-                System.Environment.Exit(1);
+                Environment.Exit(1);
                 return;                
             }
 
@@ -197,13 +213,13 @@ namespace Porter
                 {
                     try
                     {
-                        Directory.Delete(package_temp_dir);
+                        Directory.Delete(package_temp_dir, true);
                         Directory.CreateDirectory(package_temp_dir);
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error : could not recreate porter temp dir {package_temp_dir} {ex}");
-                        System.Environment.Exit(1);
+                        Environment.Exit(1);
                         return; 
                     }
                 }
@@ -214,7 +230,7 @@ namespace Porter
                 if (exitCode != 0)
                 {
                     Console.WriteLine($"ERROR : failed to clone package {package.Source}/{package.Repo} at tag {package.Tag}. Exit code {exitCode}");
-                    System.Environment.Exit(1);
+                    Environment.Exit(1);
                     return; 
                 }
 
@@ -236,7 +252,7 @@ namespace Porter
                 catch(Exception ex)
                 {
                     Console.WriteLine($"ERROR : failed to load/parse package file {package_porter_file_path}");
-                    System.Environment.Exit(1);
+                    Environment.Exit(1);
                     return; 
                 }
 
@@ -255,7 +271,7 @@ namespace Porter
                 if (!this_package_runtimes.Intersect(required_run_times).Any())
                 {
                     Console.WriteLine($"{this_package_name} runtimes {this_package_runtimes} do not align with required runtimes {required_run_times}");
-                    System.Environment.Exit(1);
+                    Environment.Exit(1);
                     return; 
                 }
 
@@ -265,7 +281,7 @@ namespace Porter
                 child_package_dir = Path.GetFullPath(child_package_dir);
 
                 if (Directory.Exists(child_package_dir))
-                    Directory.Delete(child_package_dir);
+                    Directory.Delete(child_package_dir, true);
 
                 if (!Directory.Exists(child_package_dir))
                     Directory.CreateDirectory(child_package_dir);
@@ -326,17 +342,18 @@ namespace Porter
                         Directory.CreateDirectory(remapped_file_dir);
 
                     File.WriteAllText(remapped_file_path, file_content);
-
                 }
 
-                // copy porter.json over too, for reference. we probably want to add some of our own stuff to this later ala npm
-                File.Copy(Path.Join(package_temp_dir, "porter.json"), 
-                    Path.Join(child_package_dir, "porter.json"));
+                // add our own metadata to porter.json
+                this_package_porter_conf.__installed = DateTime.Now.ToString();
+
+                // write porter.json to target location for reference.
+                File.WriteAllText(Path.Join(child_package_dir, "porter.json"), JsonConvert.SerializeObject(this_package_porter_conf));
 
                 // clean up temp child package dir
-                Directory.Delete(package_temp_dir);
+                Directory.Delete(package_temp_dir, true);
             
-                Console.WriteLine($"Installed package {this_package_name}");
+                Console.WriteLine($"Installed package {this_package_name} @ {package.Tag}");
 
                 // finally recurse by running in child package dir,
                 ProcessDirectoryLevel(child_package_dir, context, required_run_times, false);
