@@ -75,6 +75,11 @@ fi
 
 if [ $PUSH -eq 1 ]; then
 
+    # at time of writing, access token had permissions:
+    # actions : read (unsure)
+    # artefact metadata : read (unsure)
+    # contents : write (confirmed)
+    
     echo "uploading to github"
     repo="shukriadams/porter"
     name="porter_${RUNTIME}"
