@@ -81,9 +81,9 @@ if [ $PUSH -eq 1 ]; then
     
 
     if [ $RUNTIME = "linux-x64" ] ; then
-        filename=./../publish/porter
+        filename=./../publish/Porter
     elif [ $RUNTIME = "win-x64" ] ; then
-        filename=./../publish/porter.exe
+        filename=./../publish/Porter.exe
     fi
 
     GH_REPO="https://api.github.com/repos/$repo"
