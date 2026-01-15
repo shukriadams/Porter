@@ -1,0 +1,8 @@
+
+bin
+obj
+.idea
+src/Porter/porter/
+publish
+test/porter
+.vscode/launch.json
