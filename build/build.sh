@@ -52,7 +52,7 @@ if [ $BUILD -eq 1 ]; then
 
     python3 porter.py --install ./src/Porter
     dotnet restore
-    dotnet publish \
+    dotnet publish src/Porter/Porter.csproj \
         --configuration Release \
         --runtime $RUNTIME \
         -o ./publish \
