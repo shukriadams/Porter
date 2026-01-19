@@ -13,14 +13,13 @@ Porter is a source-only package system for C#. It works in much the same way as 
 
 - Packages must rely on Dotnet standard libraries only. Packages cannot pull in Nuget packages, DLLs or any external assemblies.
 - Only .cs files are supported.
-- Packages should avoid exposing (leaking) types defined by their own dependencies. Technially they can, and you're free to use them, but it's not safe (Porter namespaces will help you identiy when you're in the danger zone, see later). Choose safety.
+- Packages should avoid exposing (leaking) types defined by their own dependencies. Technically they can, and you're free to use them, but it's not safe (Porter namespaces will help you identify when you're in the danger zone, see later). Choose safety.
 - Only Github repositories are currently supported.
-- Git tags are mandatory - Porter will not sync at the repo or branch level.
-- It's still a proof-of-concept, hacked together in Python for now. It needs polish, but it works.
+- Git tags are mandatory - Porter will not sync at the branch level.
 
 ## Use
 
-Create a `porter.json` file in the root of your repo. If you're familiar with NodeJS, this file works similarly to `package.json`. It contents should look like
+Create a `porter.json` file in the root of your repo. If you're familiar with NodeJS, this file works similarly to `package.json`. Its contents should look like
 
     {
         "name" : "MyProjectNamespace",
@@ -35,12 +34,11 @@ Create a `porter.json` file in the root of your repo. If you're familiar with No
     }
 
 - `name` should be your project's root namespace. You can use anything, but the actual root namespace will be easiest.
-- `runtimes` should be the Dotnet Runtimes your application works on. In this case it's Dotnet 6. You can add several. 
-- `packages` is an optional string array, must be public repos on github, and must have tagged releases. These are the packages your project depends on.
+- `runtimes` should be the Dotnet Runtimes your application works on. In this case it's Dotnet 6. You can add more than one. 
+- `packages` is an optional string array, must be public repos on github, and must have tagged releases. These are the packages your project depends on. Note that the sytanx of a repo isn't a full url, but `servername.username.repotname@tag`. 
 - The package repos referenced should be Porter packages too (have a valid porter.json file in their repo root), and should declare a runtime that intersects with yours.
-- `export` is optional, and is the directory in your package to export files from. Use if this project is a Porter package. If not set, all cs files in the repo will be exported.
-- `ignore` is optional array of paths in your package that should not be exposed, use this to hide internal stuff like unit tests, utilities etc. Strings should be standard unix-style globs (git-style format won't work).
-
+- `export` is optional, and is the directory in your package to export files from. Use if this project is a Porter package. If not set, all .cs files in the repo will be exported.
+- `ignore` is optional array of paths in your package that should not be exported. Use this to hide internal stuff like unit tests, utilities etc. Strings should be standard unix-style globs (git-style format won't work).
 
 Copy porter.py to your system. Currently Python 3.8.X is supported. Run using
 
