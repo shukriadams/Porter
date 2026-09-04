@@ -5,27 +5,27 @@ Porter is a source-only package system for C#. It works in much the same way as 
 
 ## Features 
 
-- Packages can reference their own packages, ad infinitum (*). Porter will import and set them up for you. 
-- Different versions of the same package can occur in your dependency stack without collisions.
-
+- Packages can reference their own packages, ad infinitum. Porter will import and set them up for you. 
+- Different versions of the same package can occur in your dependency chain without collisions, just as NPM allows. 
  
 ## Caveats & Limitations
 
 - Packages must rely on Dotnet standard libraries only. Packages cannot pull in Nuget packages, DLLs or any external assemblies.
+- You're going to be compiling all dependencies and all their nested dependencies, all the way down. You project will inherit all required compiler settings like "unsafe" etc. 
 - Only .cs files are supported.
 - Packages should avoid exposing (leaking) types defined by their own dependencies. Technically they can, and you're free to use them, but it's not safe (Porter namespaces will help you identify when you're in the danger zone, see later). Choose safety.
 - Only Github repositories are currently supported.
 - Git tags are mandatory - Porter will not sync at the branch level.
 
-## Use
+## Create a package
 
 Create a `porter.json` file in the root of your repo. If you're familiar with NodeJS, this file works similarly to `package.json`. Its contents should look like
 
     {
-        "name" : "MyProjectNamespace",
+        "name" : "SomePackage",
         "runtimes" : [ 6 ],
         "packages" : [
-            "github.someuser.somepackage@1.0.0" 
+            "github.someOtheruser.someOtherpackage@1.0.0" 
         ],
         export : '/packageFiles',
         ignore : [
@@ -35,22 +35,32 @@ Create a `porter.json` file in the root of your repo. If you're familiar with No
 
 - `name` should be your project's root namespace. You can use anything, but the actual root namespace will be easiest.
 - `runtimes` should be the Dotnet Runtimes your application works on. In this case it's Dotnet 6. You can add more than one. 
-- `packages` is an optional string array, must be public repos on github, and must have tagged releases. These are the packages your project depends on. Note that the sytanx of a repo isn't a full url, but `servername.username.repotname@tag`. 
+- `packages` is an optional string array, must be public repos on github, and must have tagged releases. These are the packages your project depends on. Note that the syntax of a repo isn't a full url, but `servername.username.repotname@tag`. 
 - The package repos referenced should be Porter packages too (have a valid porter.json file in their repo root), and should declare a runtime that intersects with yours.
 - `export` is optional, and is the directory in your package to export files from. Use if this project is a Porter package. If not set, all .cs files in the repo will be exported.
 - `ignore` is optional array of paths in your package that should not be exported. Use this to hide internal stuff like unit tests, utilities etc. Strings should be standard unix-style globs (git-style format won't work).
 
-Copy porter.py to your system. Currently Python 3.8.X is supported. Run using
+# Importing a package
 
-    python porter.py --install /dir/to/your/porter.json
+First, download the Porter binary for your system from [releases](https://github.com/shukriadams/porter/releases) and place it anywhere on your system you can call it from. It has no dependencies and can be invoked directly. 
 
-This will create a `porter` directory in your project root. In your code you can do
+In your C# project root directory create another `porter.json` file, set its content to
 
-    using MyProjectNamespace.Porter_Packages.somepackage;
+    {
+        "name" : "MyProject",
+        "runtimes" : [ 6 ],
+        "packages" : [
+            "github.someuser.SomePackage@1.0.0" 
+         ]
+    }
 
-and all types from `somepackage` will be available to use. Don't everybody thank me at once.
+Then run `porter --install` in this directory. This will create a `porter` directory, under which you'll find the directory `SomePackage`. In your code you can then add
 
-## Donts
+    using MyProject.Porter_Packages.SomePackage;
+
+and all types from `SomePackage` will be available to use. Don't everybody thank me at once.
+
+## Dont's
 
 Avoid traversing multiple `.Porter_Packages.` in a single reference. That is, if you're using a package that itself uses Porter packages, you can access the sub-packages too, f.ex 
 
