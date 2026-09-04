@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-# Proof-of-concept for Porter, a packages-as-source-code manager for C#.
+# Proof-of-concept for Porter, a packages-as-source-code manager for C#. This script has been superceded by the 
+# porter binary executable, but can still be used if you want to closely follow what Porter is doing under the
+# hood.
 #
 # Use : 
 # porter --install /some/path
@@ -7,8 +9,10 @@
 # Confirmed working on Python:
 # 3.8.0 Linux
 # 3.12.0 Windows
-import warnings
+#
+# This script has no dependencies.
 
+import warnings
 import argparse
 import os
 import sys
